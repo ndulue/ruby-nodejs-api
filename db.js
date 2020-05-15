@@ -4,7 +4,7 @@ var config = {
         user: 'root',
         password: '',
         port: '3306',
-        db: 'ruby'
+        db: 'rubystore'
     }
 }
 
