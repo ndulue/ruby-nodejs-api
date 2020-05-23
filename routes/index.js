@@ -25,16 +25,20 @@ router.get('/user', function(req, res, next) {
     if (req.query.key == API_KEY) {
 
         var email = req.query.email;
-        //var password = req.body.password;
+        var password = req.query.password;
 
         if (email != null) {
             req.getConnection(function(error, conn) {
-                conn.query('SELECT id, name, email FROM users WHERE email=?', [email], function(err, rows, fields) {
+                conn.query('SELECT id, name, email FROM users WHERE email=? & password=?', [email, password], function(err, rows, fields) {
                     if (err) {
                         res.status(500);
                         res.send(JSON.stringify({ success: false, message: err.message }));
                     } else {
                         if (rows.length > 0) {
+                            let passwordIsValid = bcrypt.compareSync(req.body.password, row.password);
+                            if (!passwordIsValid) {
+                                res.send(JSON.stringify({ success: false, message: 'wrong password'}));
+                            }
                             res.send(JSON.stringify({ success: true, result: rows }));
                         } else {
                             res.send(JSON.stringify({ success: false, message: 'User does not exist' }));
@@ -57,7 +61,7 @@ router.get('/user', function(req, res, next) {
 //////////////////////////////////////////////////////////////////
 
 router.post('/user', function(req, res, next) {
-    if (req.query.key == API_KEY) {
+    if (req.body.key == API_KEY) {
 
         var email = req.body.email;
         var name = req.body.name;
@@ -150,30 +154,32 @@ router.get('/product', function(res, req, next) {
 //////////////////////////////////////////////////////////////////
 
 router.post('/contact', function(res, req, next) {
+    if (req.body.key == API_KEY) {
+        
+        var first_name = req.body.first_name;
+        var last_name = req.body.last_name;
+        var email = req.body.email;
+        var subject = req.body.subject;
+        var message = req.body.message;
 
-    var first_name = req.body.first_name;
-    var last_name = req.body.last_name;
-    var email = req.body.email;
-    var subject = req.body.subject;
-    var message = req.body.message;
-
-    if (first_name && last_name && email && subject && message != null) {
-        req.getConnection(function(error, conn) {
-            conn.query('INSERT INTO contacts(first_name,last_name,email,subject,message) VALUES(?,?,?,?,?)', [first_name, last_name, email, subject, subject, message], function(error, rows, fields) {
-                if (err) {
-                    res.status(500)
-                    res.send(JSON.stringify({ success: false, message: err.message }));
-                } else {
-                    if (rows.affectedRows > 0) {
-                        res.send(JSON.stringify({ success: true, message: 'Your message has been received' }));
+        if (first_name && last_name && email && subject && message != null) {
+            req.getConnection(function(error, conn) {
+                conn.query('INSERT INTO contacts(first_name,last_name,email,subject,message) VALUES(?,?,?,?,?)', [first_name, last_name, email, subject, subject, message], function(error, rows, fields) {
+                    if (err) {
+                        res.status(500)
+                        res.send(JSON.stringify({ success: false, message: err.message }));
                     } else {
-                        res.send(JSON.stringify({ success: false, message: 'Error inserting your details' }));
+                        if (rows.affectedRows > 0) {
+                            res.send(JSON.stringify({ success: true, message: 'Your message has been received' }));
+                        } else {
+                            res.send(JSON.stringify({ success: false, message: 'Error inserting your details' }));
+                        }
                     }
-                }
+                });
             });
-        });
-    } else {
-        res.send(JSON.stringify({ success: false, message: 'Empty field(s)' }));
+        } else {
+            res.send(JSON.stringify({ success: false, message: 'Empty field(s)' }));
+        }
     }
 });
 
