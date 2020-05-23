@@ -76,9 +76,9 @@ router.post('/user', function(req, res, next) {
                             res.send({ success: false, message: err.message });
                         } else {
                             if (rows.affectedRows > 0) {
-                                res.send({ success: false, message: 'You registration is done' });
+                                res.send({ success: true, message: 'You registration is done' });
                             } else {
-                                res.send({ success: true, message: 'Error registering your data' });
+                                res.send({ success: false, message: 'Error registering your data' });
                             }
                         }
                     });
@@ -155,7 +155,7 @@ router.get('/product', function(res, req, next) {
 
 router.post('/contact', function(res, req, next) {
     if (req.body.key == API_KEY) {
-        
+
         var first_name = req.body.first_name;
         var last_name = req.body.last_name;
         var email = req.body.email;
