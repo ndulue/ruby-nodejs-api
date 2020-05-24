@@ -1,7 +1,7 @@
 var API_KEY = 1234
 var express = require('express')
 var router = express.Router();
-const saltRounds = 10;
+const saltRounds = 8;
 var moment = require('moment');
 var bcrypt = require('bcrypt');
 //var jwt = require('jsonwebtoken');
@@ -26,20 +26,22 @@ router.get('/user', function(req, res, next) {
 
         var email = req.query.email;
         var password = req.query.password;
+        //var hashed = bcrypt.hash(req.query.password, saltRounds);
 
         if (email != null) {
             req.getConnection(function(error, conn) {
-                conn.query('SELECT id, name, email FROM users WHERE email=? & password=?', [email, password], function(err, rows, fields) {
+                conn.query('SELECT id, name, email, password FROM users WHERE email=? ', [email], function(err, rows, fields) {
                     if (err) {
                         res.status(500);
                         res.send(JSON.stringify({ success: false, message: err.message }));
                     } else {
                         if (rows.length > 0) {
-                            let passwordIsValid = bcrypt.compareSync(req.body.password, row.password);
+                            let passwordIsValid = bcrypt.compareSync(password, rows[0].password);
                             if (!passwordIsValid) {
                                 res.send(JSON.stringify({ success: false, message: 'wrong password'}));
-                            }
-                            res.send(JSON.stringify({ success: true, result: rows }));
+                            }else{
+                                res.send(JSON.stringify({ success: true, result: rows }));
+                            }                            
                         } else {
                             res.send(JSON.stringify({ success: false, message: 'User does not exist' }));
                         }
@@ -76,7 +78,7 @@ router.post('/user', function(req, res, next) {
                             res.send({ success: false, message: err.message });
                         } else {
                             if (rows.affectedRows > 0) {
-                                res.send({ success: true, message: 'You registration is done' });
+                                res.send({ success: true, message: 'Your registration is done' });
                             } else {
                                 res.send({ success: false, message: 'Error registering your data' });
                             }
